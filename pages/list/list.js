@@ -1,66 +1,46 @@
 // pages/list/list.js
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-  
+    weekWeather: [],
+    city: '广州'
   },
-
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad: function (options) {
-  
+  onLoad(options) {
+    var that = this;
+    console.log(options.city);
+    that.getWeekWeather()
   },
-
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-  
+  onPullDownRefresh() {
+    this.getWeekWeather(function() {
+      wx.stopPullDownRefresh()
+    })
   },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow: function () {
-  
+  getWeekWeather(callback){
+    var that = this;
+    wx.request({
+      url: 'http://v.juhe.cn/weather/index?format=2&cityname=' + that.data.city + '&key=817072ec690a0cb9b1c8377a36dea76d',
+      success: function (res) {
+        let result = res.data.result;
+        that.setWeekWeather(result, that)
+      },
+      complete: function() {
+        callback && callback()
+      }
+    })
   },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-  
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-  
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-  
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-  
+  setWeekWeather(result, that) {
+    let future = result.future;
+    let weekWeather = [];
+    for(var i=0; i<7; i++) {
+      weekWeather.push({
+        day: future[i].date,
+        date: future[i].week,
+        temp: future[i].temperature,
+        iconPath: '/images/g1/n' + future[i].weather_id.fa + '.gif'
+      })
+    };
+    weekWeather[0].day = '今天';
+    that.setData({
+      weekWeather: weekWeather
+    })
   }
 })

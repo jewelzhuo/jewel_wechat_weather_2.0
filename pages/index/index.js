@@ -7,7 +7,8 @@ Page({
     nowTemp: '',
     nowWeather: '',
     todayDate: '',
-    todayTemp: ''
+    todayTemp: '',
+    hourlyWeather: []
   },
   onLoad() {
     var that = this;
@@ -18,7 +19,7 @@ Page({
       wx.stopPullDownRefresh()
     })
   },
-  getNow() {
+  getNow(callback) {
     var that = this;
     wx.request({
       url: 'http://v.juhe.cn/weather/index?format=2&cityname=' + that.data.city + '&key=817072ec690a0cb9b1c8377a36dea76d',
@@ -65,6 +66,11 @@ Page({
     };
     that.setData({
       hourlyWeather: hourlyWeather
+    })
+  },
+  onTapDayWeather() {
+    wx.navigateTo({
+      url: '/pages/list/list?city=' + this.data.city
     })
   }
 })

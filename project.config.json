@@ -38,7 +38,8 @@
 				{
 					"id": -1,
 					"name": "dev star second page",
-					"pathName": "pages/list/list"
+					"pathName": "pages/list/list",
+					"query": ""
 				}
 			]
 		}
