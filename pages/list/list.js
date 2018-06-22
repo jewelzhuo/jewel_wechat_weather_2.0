@@ -2,12 +2,13 @@
 Page({
   data: {
     weekWeather: [],
-    city: '广州'
+    city: '上海'
   },
   onLoad(options) {
-    var that = this;
-    console.log(options.city);
-    that.getWeekWeather()
+    this.setData({
+      city: options.city
+    })
+    this.getWeekWeather()
   },
   onPullDownRefresh() {
     this.getWeekWeather(function() {

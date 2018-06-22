@@ -1,18 +1,48 @@
 //index.js
+const QQMapWX = require('../../libs/qqmap-wx-jssdk.js');
+
+const UNPROMPTED = 0;
+const UNAUTHORIZED = 1;
+const AUTHORIZED = 2;
+
+const UNPROMPTED_TIPS = '点击获取当前位置';
+const UNAUTHORIZED_TIPS = '点击开启位置权限';
+const AUTHORIZED_TIPS = '';
 
 Page({
   data: {
-    city: '广州',
+    city: '上海',
     weatherIcon: '',
     nowTemp: '',
     nowWeather: '',
     todayDate: '',
     todayTemp: '',
-    hourlyWeather: []
+    hourlyWeather: [],
+    locationAuthType: UNPROMPTED
   },
   onLoad() {
     var that = this;
-    that.getNow();
+    that.qqmapsdk = new QQMapWX({ //实例化API核心类，qqmapsdk在此程序里不需要声明，是局部变量还是全局变量？
+      key: 'I77BZ-GZP3O-D77WO-S2F4Q-YAJXE-QZBQ6'
+    })
+    wx.getSetting({ //页面刷新后，获取并更新当前页面的设置状态
+      success: function(res) {
+        let auth = res.authSetting['scope.userLocation'];
+        let locationAuthType = auth ? AUTHORIZED : (auth == false) ? UNAUTHORIZED : UNPROMPTED;
+        that.setData({
+          locationAuthType: locationAuthType
+        });
+        if(auth) {
+          that.getCityAndWeather(that)
+        }
+        else {
+          that.getNow()
+        }
+      },
+      fail: function() {
+        that.getNow()
+      }
+    })
   },
   onPullDownRefresh() {
     this.getNow(function(){
@@ -72,5 +102,48 @@ Page({
     wx.navigateTo({
       url: '/pages/list/list?city=' + this.data.city
     })
+  },
+  onTapLocation() {
+    var that = this;
+    if (that.data.locationAuthType === UNAUTHORIZED) {
+      wx.openSetting({
+        success: function(res) {
+          let auth = res.authSetting['scope.userLocation'];
+          if(auth){
+            that.getCityAndWeather(that)
+          };
+        }
+      })
+    }
+    else {
+      that.getCityAndWeather(that)
+    }
+  },
+  getCityAndWeather(that) {
+    wx.getLocation({
+      success: function (res) {
+        that.setData({
+          locationAuthType: AUTHORIZED
+        });
+        that.qqmapsdk.reverseGeocoder({
+          location: {
+            latitude: res.latitude,
+            longitude: res.longitude
+          },
+          success: function (res) {
+            let city = res.result.address_component.city;
+            that.setData({
+              city: city
+            });
+            that.getNow()
+          },
+        });
+      },
+      fail: function () {
+        that.setData({
+          locationAuthType: UNAUTHORIZED
+        })
+      }
+    });
   }
 })
